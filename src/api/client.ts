@@ -20,7 +20,7 @@ import type {
 } from './types.js';
 
 export class OctavAPIClient {
-  private baseUrl = 'https://api.octav.fi';
+  private baseUrl = 'https://api.octav.fi/v1';
   private apiKey: string;
 
   constructor(apiKey: string) {
@@ -36,6 +36,7 @@ export class OctavAPIClient {
     body?: any
   ): Promise<T> {
     const url = `${this.baseUrl}${endpoint}`;
+    console.error(`[OCTAV] ${method} ${url}`);
     const headers: Record<string, string> = {
       Authorization: `Bearer ${this.apiKey}`,
       'Content-Type': 'application/json',
@@ -96,26 +97,26 @@ export class OctavAPIClient {
   // Portfolio endpoints
   async getPortfolio(addresses: string[]): Promise<PortfolioResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<PortfolioResponse>(`/portfolio?${params}`);
   }
 
   async getWallet(addresses: string[]): Promise<PortfolioResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<PortfolioResponse>(`/wallet?${params}`);
   }
 
   async getNAV(addresses: string[], currency = 'usd'): Promise<NAVResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     params.append('currency', currency);
     return this.request<NAVResponse>(`/nav?${params}`);
   }
 
   async getTokenOverview(addresses: string[]): Promise<TokenOverviewResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<TokenOverviewResponse>(`/token-overview?${params}`);
   }
 
@@ -132,7 +133,7 @@ export class OctavAPIClient {
     }
   ): Promise<TransactionsResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     if (options?.chain) params.append('chain', options.chain);
     if (options?.type) params.append('type', options.type);
     if (options?.startDate) params.append('startDate', options.startDate);
@@ -149,7 +150,7 @@ export class OctavAPIClient {
   // Historical endpoints
   async getHistorical(addresses: string[], date: string): Promise<HistoricalResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     params.append('date', date);
     return this.request<HistoricalResponse>(`/historical?${params}`);
   }
@@ -167,7 +168,7 @@ export class OctavAPIClient {
   // Metadata endpoints
   async getStatus(addresses: string[]): Promise<StatusResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<StatusResponse>(`/status?${params}`);
   }
 
@@ -177,22 +178,22 @@ export class OctavAPIClient {
 
   // Specialized endpoints
   async getAirdrop(address: string): Promise<AirdropResponse> {
-    return this.request<AirdropResponse>(`/airdrop?address=${address}`);
+    return this.request<AirdropResponse>(`/airdrop?addresses=${address}`);
   }
 
   async getPolymarket(address: string): Promise<PolymarketResponse> {
-    return this.request<PolymarketResponse>(`/polymarket?address=${address}`);
+    return this.request<PolymarketResponse>(`/polymarket?addresses=${address}`);
   }
 
   async getAgentWallet(addresses: string[]): Promise<PortfolioResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<PortfolioResponse>(`/agent/wallet?${params}`);
   }
 
   async getAgentPortfolio(addresses: string[]): Promise<PortfolioResponse> {
     const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('address', addr));
+    addresses.forEach((addr) => params.append('addresses', addr));
     return this.request<PortfolioResponse>(`/agent/portfolio?${params}`);
   }
 }

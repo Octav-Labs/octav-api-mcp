@@ -9,7 +9,7 @@ export function formatStatusResponse(data: StatusResponse): {
   lines.push(`**Address:** \`${data.address}\``);
   lines.push(`**Overall Sync:** ${data.synced ? '✓ Synced' : '⏳ Syncing'}`);
   if (data.lastSync) {
-    lines.push(`**Last Sync:** ${new Date(data.lastSync * 1000).toISOString()}\n`);
+    lines.push(`**Last Sync:** ${data.lastSync ? new Date(data.lastSync * 1000).toISOString() : 'Unknown'}\n`);
   } else {
     lines.push('');
   }

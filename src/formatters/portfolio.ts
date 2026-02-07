@@ -86,7 +86,9 @@ export function formatPortfolioResponse(data: PortfolioResponse): {
     lines.push('');
   }
 
-  lines.push(`*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+  if (data.timestamp) {
+    lines.push(`*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+  }
 
   return {
     markdown: lines.join('\n'),
@@ -123,7 +125,9 @@ export function formatWalletResponse(data: PortfolioResponse): {
       );
     });
 
-  lines.push(`\n*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+  if (data.timestamp) {
+    lines.push(`\n*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+  }
 
   return {
     markdown: lines.join('\n'),
@@ -153,7 +157,7 @@ export function formatNAVResponse(data: NAVResponse): {
 **NAV:** ${symbol}${data.nav.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
 **Currency:** ${data.currency.toUpperCase()}
 
-*Timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`;
+*Timestamp: ${data.timestamp ? new Date(data.timestamp * 1000).toISOString() : 'N/A'}*`;
 
   return {
     markdown,

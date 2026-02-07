@@ -12,8 +12,9 @@ export function formatTransactionsResponse(data: TransactionsResponse): {
   if (data.transactions && data.transactions.length > 0) {
     lines.push('## Recent Transactions\n');
     data.transactions.forEach((tx, i) => {
-      const date = new Date(tx.timestamp * 1000).toISOString().split('T')[0];
-      const time = new Date(tx.timestamp * 1000).toISOString().split('T')[1].split('.')[0];
+      const txDate = tx.timestamp ? new Date(tx.timestamp * 1000) : null;
+      const date = txDate ? txDate.toISOString().split('T')[0] : 'Unknown';
+      const time = txDate ? txDate.toISOString().split('T')[1].split('.')[0] : '';
 
       lines.push(`### ${i + 1}. ${tx.type || 'Transaction'} on ${tx.chain}`);
       lines.push(`- **Hash:** \`${tx.hash}\``);
