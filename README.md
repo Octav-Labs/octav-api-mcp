@@ -16,7 +16,29 @@ MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurr
 
 ## Installation
 
+### For End Users
+
+The easiest way to use this MCP server is with npx (no installation required):
+
 ```bash
+npx octav-api-mcp
+```
+
+Or install globally:
+
+```bash
+npm install -g octav-api-mcp
+# or
+pnpm add -g octav-api-mcp
+```
+
+### For Development
+
+Clone the repository and build from source:
+
+```bash
+git clone https://github.com/Octav-Labs/octav-api-mcp.git
+cd octav-api-mcp
 pnpm install
 pnpm build
 ```
@@ -41,8 +63,25 @@ Add to your Claude Desktop configuration (`~/Library/Application Support/Claude/
 {
   "mcpServers": {
     "octav": {
-      "command": "node",
-      "args": ["/absolute/path/to/octav-api-mcp/build/index.js"],
+      "command": "npx",
+      "args": ["-y", "octav-api-mcp"],
+      "env": {
+        "OCTAV_API_KEY": "your-api-key-here"
+      }
+    }
+  }
+}
+```
+
+The `-y` flag automatically confirms package installation if not already cached.
+
+**Alternative (if installed globally):**
+
+```json
+{
+  "mcpServers": {
+    "octav": {
+      "command": "octav-api-mcp",
       "env": {
         "OCTAV_API_KEY": "your-api-key-here"
       }

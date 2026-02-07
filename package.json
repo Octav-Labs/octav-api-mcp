@@ -4,15 +4,48 @@
   "description": "MCP server for Octav cryptocurrency portfolio tracking API",
   "main": "build/index.js",
   "type": "module",
+  "bin": {
+    "octav-api-mcp": "build/index.js"
+  },
+  "files": [
+    "build/**/*",
+    "README.md",
+    "LICENSE"
+  ],
   "scripts": {
     "build": "tsc",
     "dev": "tsc --watch",
     "start": "node build/index.js",
-    "test": "jest"
+    "test": "jest",
+    "prepublishOnly": "pnpm build"
   },
-  "keywords": ["mcp", "octav", "cryptocurrency", "portfolio", "blockchain"],
-  "author": "",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "octav",
+    "cryptocurrency",
+    "portfolio",
+    "blockchain",
+    "ethereum",
+    "solana",
+    "defi",
+    "web3",
+    "claude",
+    "ai-agent"
+  ],
+  "author": "Octav Labs",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Octav-Labs/octav-api-mcp.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Octav-Labs/octav-api-mcp/issues"
+  },
+  "homepage": "https://github.com/Octav-Labs/octav-api-mcp#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",
     "zod": "^3.23.8",
