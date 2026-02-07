@@ -37,7 +37,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/Octav-Labs/octav-api-mcp.git"
+    "url": "git+https://github.com/Octav-Labs/octav-api-mcp.git"
   },
   "bugs": {
     "url": "https://github.com/Octav-Labs/octav-api-mcp/issues"
