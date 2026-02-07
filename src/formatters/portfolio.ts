@@ -140,16 +140,14 @@ export function formatNAVResponse(data: NAVResponse): {
   json: any;
 } {
   const currencySymbols: Record<string, string> = {
-    usd: '$',
-    eur: '€',
-    gbp: '£',
-    jpy: '¥',
-    cny: '¥',
-    eth: 'Ξ',
-    btc: '₿',
+    USD: '$',
+    EUR: '€',
+    GBP: '£',
+    JPY: '¥',
+    CNY: '¥',
   };
 
-  const symbol = currencySymbols[data.currency.toLowerCase()] || data.currency.toUpperCase();
+  const symbol = currencySymbols[data.currency.toUpperCase()] || data.currency.toUpperCase();
 
   const markdown = `# Net Asset Value
 

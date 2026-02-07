@@ -112,9 +112,9 @@ export const getNAV = {
         },
         currency: {
           type: 'string',
-          enum: ['usd', 'eur', 'gbp', 'jpy', 'cny', 'eth', 'btc'],
+          enum: ['USD', 'EUR', 'GBP', 'JPY', 'CNY'],
           description: 'Currency for NAV calculation. Defaults to USD.',
-          default: 'usd',
+          default: 'USD',
         },
       },
       required: ['addresses'],

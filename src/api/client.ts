@@ -107,7 +107,7 @@ export class OctavAPIClient {
     return this.request<PortfolioResponse>(`/wallet?${params}`);
   }
 
-  async getNAV(addresses: string[], currency = 'usd'): Promise<NAVResponse> {
+  async getNAV(addresses: string[], currency = 'USD'): Promise<NAVResponse> {
     const params = new URLSearchParams();
     addresses.forEach((addr) => params.append('addresses', addr));
     params.append('currency', currency);

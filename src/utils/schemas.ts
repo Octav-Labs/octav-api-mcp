@@ -27,7 +27,7 @@ export const walletArgsSchema = z.object({
 
 export const navArgsSchema = z.object({
   addresses: addressesSchema,
-  currency: z.enum(['usd', 'eur', 'gbp', 'jpy', 'cny', 'eth', 'btc']).default('usd'),
+  currency: z.enum(['USD', 'EUR', 'GBP', 'JPY', 'CNY']).default('USD'),
 });
 
 export const tokenOverviewArgsSchema = z.object({
