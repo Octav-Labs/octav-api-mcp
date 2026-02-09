@@ -1,10 +1,11 @@
+```bash
 ██████╗  ██████╗████████╗ █████╗ ██╗   ██╗
 ██╔═══██╗██╔════╝╚══██╔══╝██╔══██╗██║   ██║
 ██║   ██║██║        ██║   ███████║██║   ██║
 ██║   ██║██║        ██║   ██╔══██║╚██╗ ██╔╝
 ╚██████╔╝╚██████╗   ██║   ██║  ██║ ╚████╔╝
  ╚═════╝  ╚═════╝   ╚═╝   ╚═╝  ╚═╝  ╚═══╝
-
+```
 # Octav API MCP Server
 
 MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurrency portfolio tracking API. This server enables LLM agents to query portfolio data, transaction history, net worth, and historical snapshots across 20+ blockchains.
