@@ -4,6 +4,10 @@ import type {
   TokenOverviewResponse,
 } from '../api/types.js';
 
+function formatUsd(value: number): string {
+  return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
 export function formatPortfolioResponse(data: PortfolioResponse): {
   markdown: string;
   json: any;
@@ -11,83 +15,71 @@ export function formatPortfolioResponse(data: PortfolioResponse): {
   const lines: string[] = ['# Portfolio Summary\n'];
 
   // Calculate total value
-  let totalValue = 0;
-  const walletsByChain: Array<{ chain: string; value: number; assets: number }> = [];
+  let walletTotal = 0;
+  let protocolTotal = 0;
 
-  for (const [chain, assets] of Object.entries(data.wallets || {})) {
-    let chainValue = 0;
+  for (const assets of Object.values(data.wallets || {})) {
     assets.forEach((asset) => {
-      if (asset.value) chainValue += asset.value;
+      if (asset.value) walletTotal += asset.value;
     });
-    walletsByChain.push({ chain, value: chainValue, assets: assets.length });
-    totalValue += chainValue;
   }
 
-  // Add protocol values
   const protocols = data.protocols || [];
   protocols.forEach((protocol) => {
-    if (protocol.totalValue) totalValue += protocol.totalValue;
+    if (protocol.totalValue) protocolTotal += protocol.totalValue;
   });
 
-  lines.push(`**Total Portfolio Value:** $${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`);
+  const totalValue = walletTotal + protocolTotal;
+  lines.push(`**Total Portfolio Value:** ${formatUsd(totalValue)}`);
+  lines.push(`- Wallet holdings: ${formatUsd(walletTotal)}`);
+  lines.push(`- DeFi positions: ${formatUsd(protocolTotal)}\n`);
 
-  // Wallet holdings by chain
-  if (walletsByChain.length > 0) {
+  // Wallet holdings by chain with asset details
+  const chainEntries = Object.entries(data.wallets || {})
+    .map(([chain, assets]) => {
+      const chainValue = assets.reduce((sum, a) => sum + (a.value || 0), 0);
+      return { chain, assets, chainValue };
+    })
+    .filter((c) => c.chainValue > 0)
+    .sort((a, b) => b.chainValue - a.chainValue);
+
+  if (chainEntries.length > 0) {
     lines.push('## Wallet Holdings\n');
-    walletsByChain
-      .sort((a, b) => b.value - a.value)
-      .forEach(({ chain, value, assets }) => {
-        lines.push(
-          `- **${chain}**: $${value.toLocaleString('en-US', { minimumFractionDigits: 2 })} (${assets} assets)`
-        );
-      });
-    lines.push('');
-  }
-
-  // Top 5 assets by value
-  const allAssets: Array<{ symbol: string; chain: string; value: number; balance: string }> = [];
-  for (const [chain, assets] of Object.entries(data.wallets || {})) {
-    assets.forEach((asset) => {
-      if (asset.value && asset.value > 0) {
-        allAssets.push({
-          symbol: asset.symbol,
-          chain,
-          value: asset.value,
-          balance: asset.balance,
+    for (const { chain, assets, chainValue } of chainEntries) {
+      lines.push(`### ${chain} — ${formatUsd(chainValue)}\n`);
+      assets
+        .filter((a) => a.value && a.value > 1)
+        .sort((a, b) => (b.value || 0) - (a.value || 0))
+        .forEach((asset) => {
+          lines.push(`- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`);
         });
+      const dust = assets.filter((a) => !a.value || a.value <= 1);
+      if (dust.length > 0) {
+        lines.push(`- _${dust.length} other tokens under $1_`);
       }
-    });
-  }
-
-  if (allAssets.length > 0) {
-    lines.push('## Top Assets\n');
-    allAssets
-      .sort((a, b) => b.value - a.value)
-      .slice(0, 5)
-      .forEach((asset, i) => {
-        lines.push(
-          `${i + 1}. **${asset.symbol}** (${asset.chain}): $${asset.value.toLocaleString('en-US', { minimumFractionDigits: 2 })}`
-        );
-      });
-    lines.push('');
+      lines.push('');
+    }
   }
 
   // DeFi protocols
   if (protocols.length > 0) {
-    lines.push('## DeFi Protocol Positions\n');
-    protocols
+    const activeProtocols = protocols
       .filter((p) => p.totalValue && p.totalValue > 0)
-      .sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0))
-      .forEach((protocol) => {
+      .sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
+
+    if (activeProtocols.length > 0) {
+      lines.push('## DeFi Positions\n');
+      activeProtocols.forEach((protocol) => {
         lines.push(
-          `- **${protocol.protocol}** (${protocol.chain}): $${(protocol.totalValue || 0).toLocaleString('en-US', { minimumFractionDigits: 2 })} (${protocol.positions.length} positions)`
+          `- **${protocol.protocol}** (${protocol.chain}): ${formatUsd(protocol.totalValue || 0)} — ${protocol.positions.length} position(s)`
         );
       });
-    lines.push('');
+      lines.push('');
+    }
   }
 
   if (data.timestamp) {
-    lines.push(`*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+    lines.push(`_Updated: ${new Date(data.timestamp * 1000).toISOString()}_`);
   }
 
   return {
@@ -100,33 +92,37 @@ export function formatWalletResponse(data: PortfolioResponse): {
   markdown: string;
   json: any;
 } {
-  const lines: string[] = ['# Wallet Holdings Summary\n'];
+  const lines: string[] = ['# Wallet Holdings\n'];
 
   let totalValue = 0;
-  const walletsByChain: Array<{ chain: string; value: number; assets: number }> = [];
+  const chainEntries = Object.entries(data.wallets || {})
+    .map(([chain, assets]) => {
+      const chainValue = assets.reduce((sum, a) => sum + (a.value || 0), 0);
+      totalValue += chainValue;
+      return { chain, assets, chainValue };
+    })
+    .filter((c) => c.chainValue > 0)
+    .sort((a, b) => b.chainValue - a.chainValue);
 
-  for (const [chain, assets] of Object.entries(data.wallets || {})) {
-    let chainValue = 0;
-    assets.forEach((asset) => {
-      if (asset.value) chainValue += asset.value;
-    });
-    walletsByChain.push({ chain, value: chainValue, assets: assets.length });
-    totalValue += chainValue;
+  lines.push(`**Total Wallet Value:** ${formatUsd(totalValue)}\n`);
+
+  for (const { chain, assets, chainValue } of chainEntries) {
+    lines.push(`## ${chain} — ${formatUsd(chainValue)}\n`);
+    assets
+      .filter((a) => a.value && a.value > 1)
+      .sort((a, b) => (b.value || 0) - (a.value || 0))
+      .forEach((asset) => {
+        lines.push(`- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`);
+      });
+    const dust = assets.filter((a) => !a.value || a.value <= 1);
+    if (dust.length > 0) {
+      lines.push(`- _${dust.length} other tokens under $1_`);
+    }
+    lines.push('');
   }
 
-  lines.push(`**Total Wallet Value:** $${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`);
-
-  lines.push('## Holdings by Chain\n');
-  walletsByChain
-    .sort((a, b) => b.value - a.value)
-    .forEach(({ chain, value, assets }) => {
-      lines.push(
-        `- **${chain}**: $${value.toLocaleString('en-US', { minimumFractionDigits: 2 })} (${assets} assets)`
-      );
-    });
-
   if (data.timestamp) {
-    lines.push(`\n*Data timestamp: ${new Date(data.timestamp * 1000).toISOString()}*`);
+    lines.push(`_Updated: ${new Date(data.timestamp * 1000).toISOString()}_`);
   }
 
   return {

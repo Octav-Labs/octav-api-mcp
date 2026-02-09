@@ -45,10 +45,7 @@ export const getPortfolio = {
     const formatted = formatPortfolioResponse(data);
 
     return {
-      content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+      content: [{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -85,10 +82,7 @@ export const getWallet = {
     const formatted = formatWalletResponse(data);
 
     return {
-      content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+      content: [{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -131,10 +125,7 @@ export const getNAV = {
     const formatted = formatNAVResponse(data);
 
     return {
-      content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+      content: [{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -172,9 +163,7 @@ export const getTokenOverview = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };

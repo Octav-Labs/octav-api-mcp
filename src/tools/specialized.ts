@@ -41,9 +41,7 @@ export const getAirdrop = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -77,9 +75,7 @@ export const getPolymarket = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -117,9 +113,7 @@ export const getAgentWallet = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -157,9 +151,7 @@ export const getAgentPortfolio = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };

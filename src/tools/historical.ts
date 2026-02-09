@@ -44,9 +44,7 @@ export const getHistorical = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -89,9 +87,7 @@ export const subscribeSnapshot = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };

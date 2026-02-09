@@ -71,9 +71,7 @@ export const getTransactions = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
@@ -111,9 +109,7 @@ export const syncTransactions = {
 
     return {
       content: [
-        { type: 'text', text: formatted.markdown },
-        { type: 'text', text: JSON.stringify(formatted.json, null, 2) },
-      ],
+{ type: 'text', text: formatted.markdown }],
     };
   },
 };
