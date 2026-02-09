@@ -51,7 +51,7 @@ Create a `.env` file in the project root:
 OCTAV_API_KEY=your-api-key-here
 ```
 
-Get your API key from [octav.fi](https://octav.fi).
+Get your API key from [octav.fi](https://octav.fi/api).
 
 ## Usage
 
