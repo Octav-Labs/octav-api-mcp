@@ -1,6 +1,6 @@
 {
   "name": "octav-api-mcp",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "MCP server for Octav cryptocurrency portfolio tracking API",
   "main": "build/index.js",
   "type": "module",
@@ -44,7 +44,7 @@
   },
   "homepage": "https://github.com/Octav-Labs/octav-api-mcp#readme",
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=24.0"
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.4",

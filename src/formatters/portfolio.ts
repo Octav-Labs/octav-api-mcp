@@ -2,17 +2,23 @@ import type {
   PortfolioResponse,
   NAVResponse,
   TokenOverviewResponse,
-} from '../api/types.js';
+} from "../api/types.js";
 
 function formatUsd(value: number): string {
-  return '$' + value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return (
+    "$" +
+    value.toLocaleString("en-US", {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    })
+  );
 }
 
 export function formatPortfolioResponse(data: PortfolioResponse): {
   markdown: string;
   json: any;
 } {
-  const lines: string[] = ['# Portfolio Summary\n'];
+  const lines: string[] = ["# Portfolio Summary\n"];
 
   // Calculate total value
   let walletTotal = 0;
@@ -44,20 +50,22 @@ export function formatPortfolioResponse(data: PortfolioResponse): {
     .sort((a, b) => b.chainValue - a.chainValue);
 
   if (chainEntries.length > 0) {
-    lines.push('## Wallet Holdings\n');
+    lines.push("## Wallet Holdings\n");
     for (const { chain, assets, chainValue } of chainEntries) {
       lines.push(`### ${chain} — ${formatUsd(chainValue)}\n`);
       assets
         .filter((a) => a.value && a.value > 1)
         .sort((a, b) => (b.value || 0) - (a.value || 0))
         .forEach((asset) => {
-          lines.push(`- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`);
+          lines.push(
+            `- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`,
+          );
         });
       const dust = assets.filter((a) => !a.value || a.value <= 1);
       if (dust.length > 0) {
         lines.push(`- _${dust.length} other tokens under $1_`);
       }
-      lines.push('');
+      lines.push("");
     }
   }
 
@@ -68,13 +76,13 @@ export function formatPortfolioResponse(data: PortfolioResponse): {
       .sort((a, b) => (b.totalValue || 0) - (a.totalValue || 0));
 
     if (activeProtocols.length > 0) {
-      lines.push('## DeFi Positions\n');
+      lines.push("## DeFi Positions\n");
       activeProtocols.forEach((protocol) => {
         lines.push(
-          `- **${protocol.protocol}** (${protocol.chain}): ${formatUsd(protocol.totalValue || 0)} — ${protocol.positions.length} position(s)`
+          `- **${protocol.protocol}** (${protocol.chain}): ${formatUsd(protocol.totalValue || 0)} — ${protocol.positions.length} position(s)`,
         );
       });
-      lines.push('');
+      lines.push("");
     }
   }
 
@@ -83,7 +91,7 @@ export function formatPortfolioResponse(data: PortfolioResponse): {
   }
 
   return {
-    markdown: lines.join('\n'),
+    markdown: lines.join("\n"),
     json: data,
   };
 }
@@ -92,7 +100,7 @@ export function formatWalletResponse(data: PortfolioResponse): {
   markdown: string;
   json: any;
 } {
-  const lines: string[] = ['# Wallet Holdings\n'];
+  const lines: string[] = ["# Wallet Holdings\n"];
 
   let totalValue = 0;
   const chainEntries = Object.entries(data.wallets || {})
@@ -112,13 +120,15 @@ export function formatWalletResponse(data: PortfolioResponse): {
       .filter((a) => a.value && a.value > 1)
       .sort((a, b) => (b.value || 0) - (a.value || 0))
       .forEach((asset) => {
-        lines.push(`- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`);
+        lines.push(
+          `- ${asset.symbol}: ${asset.balance} (${formatUsd(asset.value || 0)})`,
+        );
       });
     const dust = assets.filter((a) => !a.value || a.value <= 1);
     if (dust.length > 0) {
       lines.push(`- _${dust.length} other tokens under $1_`);
     }
-    lines.push('');
+    lines.push("");
   }
 
   if (data.timestamp) {
@@ -126,7 +136,7 @@ export function formatWalletResponse(data: PortfolioResponse): {
   }
 
   return {
-    markdown: lines.join('\n'),
+    markdown: lines.join("\n"),
     json: data,
   };
 }
@@ -136,22 +146,21 @@ export function formatNAVResponse(data: NAVResponse): {
   json: any;
 } {
   const currencySymbols: Record<string, string> = {
-    USD: '$',
-    EUR: '€',
-    GBP: '£',
-    JPY: '¥',
-    CNY: '¥',
+    USD: "$",
+    EUR: "€",
+    CAD: "$",
+    AED: "د.إ",
+    CHF: "CHF",
+    SGD: "$",
   };
 
-  const symbol = currencySymbols[data.currency.toUpperCase()] || data.currency.toUpperCase();
+  const symbol =
+    currencySymbols[data.currency.toUpperCase()] || data.currency.toUpperCase();
 
   const markdown = `# Net Asset Value
 
-**Address:** \`${data.address}\`
-**NAV:** ${symbol}${data.nav.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-**Currency:** ${data.currency.toUpperCase()}
-
-*Timestamp: ${data.timestamp ? new Date(data.timestamp * 1000).toISOString() : 'N/A'}*`;
+**NAV:** ${symbol}${data.nav.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+**Currency:** ${data.currency.toUpperCase()}`;
 
   return {
     markdown,
@@ -163,18 +172,20 @@ export function formatTokenOverviewResponse(data: TokenOverviewResponse): {
   markdown: string;
   json: any;
 } {
-  const lines: string[] = ['# Token Distribution\n'];
+  const lines: string[] = ["# Token Distribution\n"];
 
-  lines.push(`**Total Value:** $${data.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`);
+  lines.push(
+    `**Total Value:** $${data.totalValue.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\n`,
+  );
 
   if (data.tokens && data.tokens.length > 0) {
-    lines.push('## Token Breakdown\n');
+    lines.push("## Token Breakdown\n");
     data.tokens
       .sort((a, b) => b.value - a.value)
       .forEach((token, i) => {
-        const chains = token.chains.join(', ');
+        const chains = token.chains.join(", ");
         lines.push(
-          `${i + 1}. **${token.symbol}**: $${token.value.toLocaleString('en-US', { minimumFractionDigits: 2 })} (${token.percentage.toFixed(2)}%)`
+          `${i + 1}. **${token.symbol}**: $${token.value.toLocaleString("en-US", { minimumFractionDigits: 2 })} (${token.percentage.toFixed(2)}%)`,
         );
         lines.push(`   - Balance: ${token.balance}`);
         lines.push(`   - Chains: ${chains}\n`);
@@ -182,7 +193,7 @@ export function formatTokenOverviewResponse(data: TokenOverviewResponse): {
   }
 
   return {
-    markdown: lines.join('\n'),
+    markdown: lines.join("\n"),
     json: data,
   };
 }
