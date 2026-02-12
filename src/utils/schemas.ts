@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 // Address validation - supports EVM (0x...) and Solana (base58) addresses
 const evmAddressRegex = /^0x[a-fA-F0-9]{40}$/;
@@ -8,13 +8,13 @@ export const addressSchema = z
   .string()
   .refine(
     (addr) => evmAddressRegex.test(addr) || solanaAddressRegex.test(addr),
-    'Invalid address format. Must be EVM (0x...) or Solana (base58) address.'
+    "Invalid address format. Must be EVM (0x...) or Solana (base58) address.",
   );
 
 export const addressesSchema = z
   .array(addressSchema)
-  .min(1, 'At least one address is required')
-  .max(10, 'Maximum 10 addresses allowed');
+  .min(1, "At least one address is required")
+  .max(10, "Maximum 10 addresses allowed");
 
 // Portfolio tool schemas
 export const portfolioArgsSchema = z.object({
@@ -27,7 +27,7 @@ export const walletArgsSchema = z.object({
 
 export const navArgsSchema = z.object({
   addresses: addressesSchema,
-  currency: z.enum(['USD', 'EUR', 'GBP', 'JPY', 'CNY']).default('USD'),
+  currency: z.enum(["USD", "EUR", "CAD", "AED", "CHF", "SGD"]).default("USD"),
 });
 
 export const tokenOverviewArgsSchema = z.object({
@@ -52,12 +52,14 @@ export const syncTransactionsArgsSchema = z.object({
 // Historical tool schemas
 export const historicalArgsSchema = z.object({
   addresses: addressesSchema,
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
+  date: z
+    .string()
+    .regex(/^\d{4}-\d{2}-\d{2}$/, "Date must be in YYYY-MM-DD format"),
 });
 
 export const subscribeSnapshotArgsSchema = z.object({
   addresses: addressesSchema,
-  frequency: z.enum(['daily', 'weekly', 'monthly']),
+  frequency: z.enum(["daily", "weekly", "monthly"]),
 });
 
 // Metadata tool schemas

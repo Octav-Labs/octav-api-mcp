@@ -6,6 +6,7 @@
 ╚██████╔╝╚██████╗   ██║   ██║  ██║ ╚████╔╝
  ╚═════╝  ╚═════╝   ╚═╝   ╚═╝  ╚═╝  ╚═══╝
 ```
+
 # Octav API MCP Server
 
 MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurrency portfolio tracking API. This server enables LLM agents to query portfolio data, transaction history, net worth, and historical snapshots across 20+ blockchains.
@@ -15,7 +16,7 @@ MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurr
 - 🔗 **20+ Blockchain Support**: Ethereum, Solana, Arbitrum, Base, Polygon, and more
 - 💼 **Complete Portfolio Tracking**: Wallets + DeFi protocol positions
 - 📊 **Transaction History**: Advanced filtering and pagination
-- 💰 **Multi-Currency NAV**: USD, EUR, GBP, JPY, CNY, ETH, BTC
+- 💰 **Multi-Currency NAV**: USD, EUR, CAD, AED, CHF, SGD
 - 📸 **Historical Snapshots**: Track portfolio value over time
 - 🎯 **Token Distribution**: Aggregated token holdings across chains
 - 🎁 **Airdrop Tracking**: Solana airdrop eligibility
@@ -114,34 +115,42 @@ All tools use the `octav_` prefix for namespace clarity.
 ### Portfolio & Holdings (4 tools)
 
 #### 1. `octav_get_portfolio`
+
 Get complete portfolio including wallet holdings and DeFi protocol positions.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** 1 credit per address
 
 #### 2. `octav_get_wallet`
+
 Get wallet holdings only (excludes DeFi protocols).
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** 1 credit per address
 
 #### 3. `octav_get_nav`
+
 Get total net worth (NAV) in specified currency.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
-- `currency` (optional): Currency code (usd, eur, gbp, jpy, cny, eth, btc). Default: usd
+- `currency` (optional): Currency code (USD, EUR, CAD, AED, CHF, SGD). Default: usd
 
 **Cost:** 1 credit per address
 
 #### 4. `octav_get_token_overview`
+
 Get aggregated token distribution across all chains.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** 1 credit per address
@@ -149,9 +158,11 @@ Get aggregated token distribution across all chains.
 ### Transactions (2 tools)
 
 #### 5. `octav_get_transactions`
+
 Query transaction history with filtering and pagination.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 - `chain` (optional): Filter by specific chain
 - `type` (optional): Filter by transaction type
@@ -163,9 +174,11 @@ Query transaction history with filtering and pagination.
 **Cost:** 1 credit per address
 
 #### 6. `octav_sync_transactions`
+
 Manually trigger transaction synchronization.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** 1 credit per address
@@ -173,18 +186,22 @@ Manually trigger transaction synchronization.
 ### Historical & Snapshots (2 tools)
 
 #### 7. `octav_get_historical`
+
 Get portfolio snapshot for a specific date in the past.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 - `date` (required): Date for snapshot (YYYY-MM-DD)
 
 **Cost:** 1 credit per address
 
 #### 8. `octav_subscribe_snapshot`
+
 Subscribe to automatic portfolio snapshots.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 - `frequency` (required): Snapshot frequency (daily, weekly, monthly)
 
@@ -193,14 +210,17 @@ Subscribe to automatic portfolio snapshots.
 ### Metadata (2 tools)
 
 #### 9. `octav_get_status`
+
 Check synchronization status across all chains.
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** FREE
 
 #### 10. `octav_get_credits`
+
 Check API credit balance and usage.
 
 **Parameters:** None
@@ -210,33 +230,41 @@ Check API credit balance and usage.
 ### Specialized (4 tools)
 
 #### 11. `octav_get_airdrop`
+
 Check airdrop eligibility (Solana only).
 
 **Parameters:**
+
 - `address` (required): Solana wallet address
 
 **Cost:** 1 credit
 
 #### 12. `octav_get_polymarket`
+
 Get Polymarket prediction market positions.
 
 **Parameters:**
+
 - `address` (required): Ethereum wallet address
 
 **Cost:** 1 credit
 
 #### 13. `octav_agent_wallet`
+
 Get wallet holdings via x402 payment protocol (for AI agents).
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** Paid via HTTP 402 payment protocol
 
 #### 14. `octav_agent_portfolio`
+
 Get full portfolio via x402 payment protocol (for AI agents).
 
 **Parameters:**
+
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** Paid via HTTP 402 payment protocol

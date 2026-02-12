@@ -1,4 +1,3 @@
-// Portfolio types
 export interface Asset {
   address: string;
   symbol: string;
@@ -26,7 +25,6 @@ export interface PortfolioResponse {
   timestamp: number;
 }
 
-// Transaction types
 export interface Transaction {
   hash: string;
   from: string;
@@ -47,15 +45,11 @@ export interface TransactionsResponse {
   limit: number;
 }
 
-// NAV types
 export interface NAVResponse {
-  address: string;
   nav: number;
   currency: string;
-  timestamp: number;
 }
 
-// Status types
 export interface StatusResponse {
   address: string;
   synced: boolean;
@@ -68,14 +62,12 @@ export interface StatusResponse {
   };
 }
 
-// Credits types
 export interface CreditsResponse {
   balance: number;
   used: number;
   remaining: number;
 }
 
-// Snapshot types
 export interface SnapshotResponse {
   address: string;
   date: string;
@@ -88,7 +80,6 @@ export interface SubscribeSnapshotResponse {
   subscribed: boolean;
 }
 
-// Token overview types
 export interface TokenOverview {
   symbol: string;
   balance: string;
@@ -103,21 +94,18 @@ export interface TokenOverviewResponse {
   totalValue: number;
 }
 
-// Historical types
 export interface HistoricalResponse {
   address: string;
   date: string;
   portfolio: PortfolioResponse;
 }
 
-// Sync types
 export interface SyncResponse {
   address: string;
   status: string;
   message: string;
 }
 
-// Airdrop types
 export interface AirdropResponse {
   address: string;
   airdrops: Array<{
@@ -128,7 +116,6 @@ export interface AirdropResponse {
   }>;
 }
 
-// Polymarket types
 export interface PolymarketPosition {
   marketId: string;
   question: string;
