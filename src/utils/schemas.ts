@@ -32,6 +32,7 @@ export const navArgsSchema = z.object({
 
 export const tokenOverviewArgsSchema = z.object({
   addresses: addressesSchema,
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
 });
 
 // Transaction tool schemas
@@ -41,7 +42,7 @@ export const transactionsArgsSchema = z.object({
   type: z.string().optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  offset: z.number().int().min(0).optional(),
+  offset: z.number().int().min(0).default(0),
   limit: z.number().int().min(1).max(250).default(50),
 });
 
@@ -57,7 +58,7 @@ export const historicalArgsSchema = z.object({
 
 export const subscribeSnapshotArgsSchema = z.object({
   addresses: addressesSchema,
-  frequency: z.enum(['daily', 'weekly', 'monthly']),
+  description: z.string().optional(),
 });
 
 // Metadata tool schemas

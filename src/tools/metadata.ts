@@ -1,7 +1,6 @@
 import type { OctavAPIClient } from '../api/client.js';
 import { statusArgsSchema, creditsArgsSchema } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
-import { formatStatusResponse, formatCreditsResponse } from '../formatters/index.js';
 
 export const getStatus = {
   definition: {
@@ -32,11 +31,9 @@ export const getStatus = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(statusArgsSchema, args);
     const data = await apiClient.getStatus(validated.addresses);
-    const formatted = formatStatusResponse(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };
@@ -60,11 +57,9 @@ export const getCredits = {
   async execute(args: any, apiClient: OctavAPIClient) {
     validateInput(creditsArgsSchema, args);
     const data = await apiClient.getCredits();
-    const formatted = formatCreditsResponse(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };

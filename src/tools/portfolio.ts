@@ -6,12 +6,7 @@ import {
   tokenOverviewArgsSchema,
 } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
-import {
-  formatPortfolioResponse,
-  formatWalletResponse,
-  formatNAVResponse,
-  formatTokenOverviewResponse,
-} from '../formatters/index.js';
+import { stripPortfolioFields } from '../utils/strip-portfolio.js';
 
 export const getPortfolio = {
   definition: {
@@ -42,10 +37,10 @@ export const getPortfolio = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(portfolioArgsSchema, args);
     const data = await apiClient.getPortfolio(validated.addresses);
-    const formatted = formatPortfolioResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -79,10 +74,10 @@ export const getWallet = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(walletArgsSchema, args);
     const data = await apiClient.getWallet(validated.addresses);
-    const formatted = formatWalletResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -122,10 +117,9 @@ export const getNAV = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(navArgsSchema, args);
     const data = await apiClient.getNAV(validated.addresses, validated.currency);
-    const formatted = formatNAVResponse(data);
 
     return {
-      content: [{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };
@@ -147,8 +141,13 @@ export const getTokenOverview = {
           minItems: 1,
           maxItems: 10,
         },
+        date: {
+          type: 'string',
+          description: 'Date for token overview snapshot (YYYY-MM-DD format)',
+          pattern: '^\\d{4}-\\d{2}-\\d{2}$',
+        },
       },
-      required: ['addresses'],
+      required: ['addresses', 'date'],
     },
     annotations: {
       readOnlyHint: true,
@@ -158,12 +157,10 @@ export const getTokenOverview = {
   },
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(tokenOverviewArgsSchema, args);
-    const data = await apiClient.getTokenOverview(validated.addresses);
-    const formatted = formatTokenOverviewResponse(data);
+    const data = await apiClient.getTokenOverview(validated.addresses, validated.date);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };

@@ -1,7 +1,6 @@
 import type { OctavAPIClient } from '../api/client.js';
 import { transactionsArgsSchema, syncTransactionsArgsSchema } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
-import { formatTransactionsResponse, formatSyncResponse } from '../formatters/index.js';
 
 export const getTransactions = {
   definition: {
@@ -40,6 +39,7 @@ export const getTransactions = {
           type: 'number',
           description: 'Pagination offset (default: 0)',
           minimum: 0,
+          default: 0,
         },
         limit: {
           type: 'number',
@@ -64,14 +64,12 @@ export const getTransactions = {
       type: validated.type,
       startDate: validated.startDate,
       endDate: validated.endDate,
-      offset: validated.offset,
-      limit: validated.limit,
+      offset: validated.offset ?? 0,
+      limit: validated.limit ?? 50,
     });
-    const formatted = formatTransactionsResponse(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };
@@ -105,11 +103,9 @@ export const syncTransactions = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(syncTransactionsArgsSchema, args);
     const data = await apiClient.syncTransactions(validated.addresses);
-    const formatted = formatSyncResponse(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };
