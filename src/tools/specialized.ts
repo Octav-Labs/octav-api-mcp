@@ -6,11 +6,7 @@ import {
   agentPortfolioArgsSchema,
 } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
-import {
-  formatAirdropResponse,
-  formatPolymarketResponse,
-  formatPortfolioResponse,
-} from '../formatters/index.js';
+import { stripPortfolioFields } from '../utils/strip-portfolio.js';
 
 export const getAirdrop = {
   definition: {
@@ -37,11 +33,10 @@ export const getAirdrop = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(airdropArgsSchema, args);
     const data = await apiClient.getAirdrop(validated.address);
-    const formatted = formatAirdropResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -71,11 +66,10 @@ export const getPolymarket = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(polymarketArgsSchema, args);
     const data = await apiClient.getPolymarket(validated.address);
-    const formatted = formatPolymarketResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -109,11 +103,10 @@ export const getAgentWallet = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(agentWalletArgsSchema, args);
     const data = await apiClient.getAgentWallet(validated.addresses);
-    const formatted = formatPortfolioResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -147,11 +140,10 @@ export const getAgentPortfolio = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(agentPortfolioArgsSchema, args);
     const data = await apiClient.getAgentPortfolio(validated.addresses);
-    const formatted = formatPortfolioResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };

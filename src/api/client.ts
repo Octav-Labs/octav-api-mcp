@@ -11,7 +11,6 @@ import type {
   NAVResponse,
   StatusResponse,
   CreditsResponse,
-  SnapshotResponse,
   SubscribeSnapshotResponse,
   TokenOverviewResponse,
   HistoricalResponse,
@@ -50,7 +49,6 @@ export class OctavAPIClient {
         body: body ? JSON.stringify(body) : undefined,
       });
 
-      // Handle error status codes
       if (!response.ok) {
         const errorText = await response.text();
         let errorData: any;
@@ -95,7 +93,70 @@ export class OctavAPIClient {
     }
   }
 
-  // Portfolio endpoints
+  private async requestText(
+    endpoint: string,
+    method: 'GET' | 'POST' = 'GET',
+    body?: any
+  ): Promise<string> {
+    const url = `${this.baseUrl}${endpoint}`;
+    console.error(`[OCTAV] ${method} ${url}`);
+    const headers: Record<string, string> = {
+      Authorization: `Bearer ${this.apiKey}`,
+      'Content-Type': 'application/json',
+    };
+
+    try {
+      const response = await fetch(url, {
+        method,
+        headers,
+        body: body ? JSON.stringify(body) : undefined,
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorData: any;
+        try {
+          errorData = JSON.parse(errorText);
+        } catch {
+          errorData = { message: errorText };
+        }
+
+        switch (response.status) {
+          case 401:
+            throw new AuthenticationError(
+              errorData.message || 'Invalid API key. Please check your OCTAV_API_KEY.'
+            );
+          case 402:
+            throw new InsufficientCreditsError(
+              errorData.message || 'Insufficient credits.',
+              errorData.creditsNeeded
+            );
+          case 429:
+            throw new RateLimitError(
+              errorData.message || 'Rate limit exceeded.',
+              errorData.retryAfter
+            );
+          default:
+            throw new OctavAPIError(
+              errorData.message || `API request failed with status ${response.status}`,
+              response.status,
+              errorData
+            );
+        }
+      }
+
+      return await response.text();
+    } catch (error) {
+      if (error instanceof OctavAPIError) {
+        throw error;
+      }
+      throw new OctavAPIError(
+        `Network error: ${error instanceof Error ? error.message : 'Unknown error'}`
+      );
+    }
+  }
+
+  // Portfolio endpoints — all return arrays
   async getPortfolio(addresses: string[]): Promise<PortfolioResponse> {
     const params = new URLSearchParams();
     addresses.forEach((addr) => params.append('addresses', addr));
@@ -115,37 +176,41 @@ export class OctavAPIClient {
     return this.request<NAVResponse>(`/nav?${params}`);
   }
 
-  async getTokenOverview(addresses: string[]): Promise<TokenOverviewResponse> {
+  async getTokenOverview(addresses: string[], date: string): Promise<TokenOverviewResponse> {
     const params = new URLSearchParams();
     addresses.forEach((addr) => params.append('addresses', addr));
+    params.append('date', date);
     return this.request<TokenOverviewResponse>(`/token-overview?${params}`);
   }
 
   // Transaction endpoints
   async getTransactions(
     addresses: string[],
-    options?: {
+    options: {
       chain?: string;
       type?: string;
       startDate?: string;
       endDate?: string;
-      offset?: number;
-      limit?: number;
+      offset: number;
+      limit: number;
     }
   ): Promise<TransactionsResponse> {
     const params = new URLSearchParams();
     addresses.forEach((addr) => params.append('addresses', addr));
-    if (options?.chain) params.append('chain', options.chain);
-    if (options?.type) params.append('type', options.type);
-    if (options?.startDate) params.append('startDate', options.startDate);
-    if (options?.endDate) params.append('endDate', options.endDate);
-    if (options?.offset !== undefined) params.append('offset', options.offset.toString());
-    if (options?.limit !== undefined) params.append('limit', options.limit.toString());
+    if (options.chain) params.append('chain', options.chain);
+    if (options.type) params.append('type', options.type);
+    if (options.startDate) params.append('startDate', options.startDate);
+    if (options.endDate) params.append('endDate', options.endDate);
+    params.append('offset', options.offset.toString());
+    params.append('limit', options.limit.toString());
     return this.request<TransactionsResponse>(`/transactions?${params}`);
   }
 
   async syncTransactions(addresses: string[]): Promise<SyncResponse> {
-    return this.request<SyncResponse>('/transactions/sync', 'POST', { addresses });
+    // API returns a JSON string like "Address already syncing"
+    const text = await this.requestText('/sync-transactions', 'POST', { addresses });
+    // Strip surrounding quotes if present
+    return text.replace(/^"|"$/g, '');
   }
 
   // Historical endpoints
@@ -157,12 +222,10 @@ export class OctavAPIClient {
   }
 
   async subscribeSnapshot(
-    addresses: string[],
-    frequency: 'daily' | 'weekly' | 'monthly'
+    addresses: { address: string; description?: string }[]
   ): Promise<SubscribeSnapshotResponse> {
-    return this.request<SubscribeSnapshotResponse>('/snapshot/subscribe', 'POST', {
+    return this.request<SubscribeSnapshotResponse>('/subscribe-snapshot', 'POST', {
       addresses,
-      frequency,
     });
   }
 
@@ -174,7 +237,12 @@ export class OctavAPIClient {
   }
 
   async getCredits(): Promise<CreditsResponse> {
-    return this.request<CreditsResponse>('/credits');
+    const text = await this.requestText('/credits');
+    const num = Number(text);
+    if (isNaN(num)) {
+      throw new OctavAPIError(`Unexpected credits response: ${text}`);
+    }
+    return num;
   }
 
   // Specialized endpoints
@@ -183,7 +251,7 @@ export class OctavAPIClient {
   }
 
   async getPolymarket(address: string): Promise<PolymarketResponse> {
-    return this.request<PolymarketResponse>(`/polymarket?addresses=${address}`);
+    return this.request<PolymarketResponse>(`/portfolio/proxy/polymarket?addresses=${address}`);
   }
 
   async getAgentWallet(addresses: string[]): Promise<PortfolioResponse> {

@@ -1,10 +1,7 @@
 import type { OctavAPIClient } from '../api/client.js';
 import { historicalArgsSchema, subscribeSnapshotArgsSchema } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
-import {
-  formatHistoricalResponse,
-  formatSubscribeSnapshotResponse,
-} from '../formatters/index.js';
+import { stripPortfolioFields } from '../utils/strip-portfolio.js';
 
 export const getHistorical = {
   definition: {
@@ -40,11 +37,10 @@ export const getHistorical = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(historicalArgsSchema, args);
     const data = await apiClient.getHistorical(validated.addresses, validated.date);
-    const formatted = formatHistoricalResponse(data);
+    const stripped = stripPortfolioFields(data);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
     };
   },
 };
@@ -54,7 +50,7 @@ export const subscribeSnapshot = {
     name: 'octav_subscribe_snapshot',
     title: 'Subscribe to Snapshots',
     description:
-      'Subscribe to automatic portfolio snapshots at specified frequency (daily, weekly, or monthly). Enables historical tracking. Costs 1 credit per address.',
+      'Subscribe to automatic portfolio snapshots. Enables historical tracking. Costs 1200 credits. API expects addresses with optional descriptions.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -66,13 +62,12 @@ export const subscribeSnapshot = {
           minItems: 1,
           maxItems: 10,
         },
-        frequency: {
+        description: {
           type: 'string',
-          enum: ['daily', 'weekly', 'monthly'],
-          description: 'Snapshot frequency: daily, weekly, or monthly',
+          description: 'Optional description for the subscription',
         },
       },
-      required: ['addresses', 'frequency'],
+      required: ['addresses'],
     },
     annotations: {
       readOnlyHint: false,
@@ -82,12 +77,14 @@ export const subscribeSnapshot = {
   },
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(subscribeSnapshotArgsSchema, args);
-    const data = await apiClient.subscribeSnapshot(validated.addresses, validated.frequency);
-    const formatted = formatSubscribeSnapshotResponse(data);
+    const addressPayload = validated.addresses.map((addr: string) => ({
+      address: addr,
+      ...(validated.description ? { description: validated.description } : {}),
+    }));
+    const data = await apiClient.subscribeSnapshot(addressPayload);
 
     return {
-      content: [
-{ type: 'text', text: formatted.markdown }],
+      content: [{ type: 'text', text: JSON.stringify(data, null, 2) }],
     };
   },
 };
