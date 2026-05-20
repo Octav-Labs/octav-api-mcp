@@ -18,18 +18,22 @@ jobs:
       id-token: write
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
-      - name: Setup NPM Auth
-        uses: Octav-Labs/github-actions/setup-npm-auth@v1.1.14
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
         with:
-          op_service_account_token: ${{ secrets.OP_SERVICE_ACCOUNT_TOKEN }}
-          npm_token_1p_path: "op://admin-developers/NPM - CICD tokens/password"
+          version: 10
 
       - name: Setup Node
-        uses: Octav-Labs/github-actions/setup-node@v1.1.14
+        uses: actions/setup-node@v6
         with:
-          pnpm-version: 10
+          node-version-file: '.nvmrc'
+          registry-url: 'https://registry.npmjs.org'
+          package-manager-cache: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
       - name: Build
         run: pnpm build
