@@ -7,7 +7,7 @@ export const getTransactions = {
     name: 'octav_get_transactions',
     title: 'Get Transaction History',
     description:
-      'Query transaction history with filtering and pagination. Filter by chain, type, date range. Max 250 transactions per request. Costs 1 credit per address.',
+      'Query transaction history with filtering and pagination. Filter by chain, type, protocol, counterparty, text search, NFT token ID, and date range, and hide spam or dust. Max 250 transactions per request. Costs 1 credit per address.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -21,11 +21,30 @@ export const getTransactions = {
         },
         chain: {
           type: 'string',
-          description: 'Filter by specific chain (e.g., ethereum, solana, arbitrum)',
+          description:
+            'Filter by chain keys, comma-separated (e.g., ethereum,arbitrum,base). See octav_get_chains.',
         },
         type: {
           type: 'string',
-          description: 'Filter by transaction type (e.g., transfer, swap, stake)',
+          description: 'Filter by transaction types, comma-separated (e.g., SWAP,DEPOSIT)',
+        },
+        protocol: {
+          type: 'string',
+          description:
+            'Filter by protocol keys, comma-separated. See octav_get_chain_protocols.',
+        },
+        interactingAddresses: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Only transactions with these counterparty addresses',
+        },
+        search: {
+          type: 'string',
+          description: 'Full-text search over token symbols, names and addresses',
+        },
+        tokenId: {
+          type: 'string',
+          description: 'Filter by NFT token ID',
         },
         startDate: {
           type: 'string',
@@ -34,6 +53,19 @@ export const getTransactions = {
         endDate: {
           type: 'string',
           description: 'End date for filtering (YYYY-MM-DD)',
+        },
+        sort: {
+          type: 'string',
+          enum: ['ASC', 'DESC'],
+          description: 'Sort by timestamp (default: DESC, newest first)',
+        },
+        hideSpam: {
+          type: 'boolean',
+          description: 'Exclude spam transactions',
+        },
+        hideDust: {
+          type: 'boolean',
+          description: 'Exclude dust transactions',
         },
         offset: {
           type: 'number',
@@ -62,8 +94,15 @@ export const getTransactions = {
     const data = await apiClient.getTransactions(validated.addresses, {
       chain: validated.chain,
       type: validated.type,
+      protocol: validated.protocol,
+      interactingAddresses: validated.interactingAddresses,
+      search: validated.search,
+      tokenId: validated.tokenId,
       startDate: validated.startDate,
       endDate: validated.endDate,
+      sort: validated.sort,
+      hideSpam: validated.hideSpam,
+      hideDust: validated.hideDust,
       offset: validated.offset ?? 0,
       limit: validated.limit ?? 50,
     });

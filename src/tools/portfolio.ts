@@ -1,6 +1,7 @@
 import type { OctavAPIClient } from '../api/client.js';
 import {
   portfolioArgsSchema,
+  portfolioAtBlockArgsSchema,
   walletArgsSchema,
   navArgsSchema,
   tokenOverviewArgsSchema,
@@ -13,7 +14,7 @@ export const getPortfolio = {
     name: 'octav_get_portfolio',
     title: 'Get Full Portfolio',
     description:
-      'Get complete portfolio including wallet holdings and DeFi protocol positions across 20+ blockchains. Returns token balances, values, and protocol positions. Costs 1 credit per address.',
+      'Get complete portfolio including wallet holdings and DeFi protocol positions across 20+ blockchains. Returns token balances, values, and protocol positions. Waits for a fresh sync by default. Costs 1 credit per address.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -24,6 +25,17 @@ export const getPortfolio = {
             'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
           minItems: 1,
           maxItems: 10,
+        },
+        waitForSync: {
+          type: 'boolean',
+          description:
+            'Wait for a fresh sync when cached data is stale (default: true). Set false to return cached data immediately.',
+          default: true,
+        },
+        includeExplorerUrls: {
+          type: 'boolean',
+          description: 'Include blockchain explorer URLs for assets and transactions (default: false)',
+          default: false,
         },
       },
       required: ['addresses'],
@@ -36,7 +48,56 @@ export const getPortfolio = {
   },
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(portfolioArgsSchema, args);
-    const data = await apiClient.getPortfolio(validated.addresses);
+    const data = await apiClient.getPortfolio(validated.addresses, {
+      waitForSync: validated.waitForSync,
+      includeExplorerUrls: validated.includeExplorerUrls,
+    });
+    const stripped = stripPortfolioFields(data);
+
+    return {
+      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
+    };
+  },
+};
+
+export const getPortfolioAtBlock = {
+  definition: {
+    name: 'octav_get_portfolio_at_block',
+    title: 'Get Portfolio at Block',
+    description:
+      "Get a single EVM address's portfolio valued at a specific block on ethereum, linea or monad, with every balance and price as of that block. Requires the Portfolio at Block add-on. Costs 1 credit.",
+    inputSchema: {
+      type: 'object',
+      properties: {
+        address: {
+          type: 'string',
+          description: 'EVM wallet address (0x...)',
+        },
+        chain: {
+          type: 'string',
+          description: 'Chain the block belongs to: ethereum, linea or monad',
+        },
+        block: {
+          type: 'integer',
+          description: 'Block number',
+          minimum: 1,
+        },
+      },
+      required: ['address', 'chain', 'block'],
+    },
+    annotations: {
+      readOnlyHint: true,
+      destructiveHint: false,
+      openWorldHint: true,
+    },
+  },
+  async execute(args: any, apiClient: OctavAPIClient) {
+    const validated = validateInput(portfolioAtBlockArgsSchema, args);
+    const data = await apiClient.getPortfolioAtBlock(
+      validated.address,
+      validated.chain,
+      validated.block
+    );
     const stripped = stripPortfolioFields(data);
 
     return {

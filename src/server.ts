@@ -1,3 +1,4 @@
+import { createRequire } from 'node:module';
 import { Server } from '@modelcontextprotocol/sdk/server/index.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
 import {
@@ -6,7 +7,9 @@ import {
 } from '@modelcontextprotocol/sdk/types.js';
 import { OctavAPIClient } from './api/client.js';
 import { toolRegistry } from './tools/index.js';
-import { OctavAPIError, ValidationError } from './api/errors.js';
+import { ConfirmationRequiredError, OctavAPIError, ValidationError } from './api/errors.js';
+
+const { version } = createRequire(import.meta.url)('../package.json') as { version: string };
 
 export class OctavMCPServer {
   private server: Server;
@@ -18,7 +21,7 @@ export class OctavMCPServer {
     this.server = new Server(
       {
         name: 'octav-api-mcp',
-        version: '1.0.0',
+        version,
       },
       {
         capabilities: {
@@ -62,6 +65,8 @@ export class OctavMCPServer {
 
         if (error instanceof ValidationError) {
           errorMessage = `Validation Error: ${error.message}`;
+        } else if (error instanceof ConfirmationRequiredError) {
+          errorMessage = `Confirmation Required: ${error.message}`;
         } else if (error instanceof OctavAPIError) {
           errorMessage = `API Error: ${error.message}`;
           if (error.statusCode === 402) {
