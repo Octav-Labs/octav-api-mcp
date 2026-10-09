@@ -154,3 +154,92 @@ export type AirdropResponse = PortfolioEntry[];
 
 // Polymarket types — same shape as portfolio (array)
 export type PolymarketResponse = PortfolioEntry[];
+
+// Address book types — entries are keyed by address, there is no id
+export interface AddressBookEntry {
+  address: string;
+  label: string;
+  plan: 'FREE' | 'LITE' | 'PRO';
+  expiresAt: string | null;
+  isPaid: boolean;
+}
+
+export interface AddressBookResponse {
+  data: AddressBookEntry[];
+}
+
+export interface AddressBookEntryResponse {
+  data: AddressBookEntry;
+}
+
+// Bundle types — named groups of address book addresses
+export interface Bundle {
+  id: string;
+  name: string;
+  addresses: string[];
+}
+
+export interface BundlesResponse {
+  data: Bundle[];
+}
+
+export interface BundleResponse {
+  data: Bundle;
+}
+
+// Chain types — /chains and /chains/{chainKey}/protocols are free
+export interface Chain {
+  chainId: number;
+  key: string;
+  name: string;
+  isPortfolioSupported: boolean;
+  isTransactionsSupported: boolean;
+  [key: string]: any;
+}
+
+export type ChainsResponse = Chain[];
+
+export interface ChainProtocolsResponse {
+  data: { uuid: string; name: string; key: string; [key: string]: any }[];
+  pagination: { page: number; limit: number; hasMore: boolean };
+}
+
+// Contract protocol types — { protocol } when a chain is given, otherwise
+// { protocols } with each entry tagged by chainKey
+export interface ContractProtocol {
+  name: string;
+  key: string;
+  chainKey?: string;
+  [key: string]: any;
+}
+
+export type ContractProtocolResponse =
+  | { protocol: ContractProtocol }
+  | { protocols: ContractProtocol[] };
+
+// Approval types — paginated by cursor, which is absent or null on the last page
+export interface Approval {
+  block: string;
+  timestamp: string;
+  hash: string;
+  contract: string;
+  from: string;
+  to: string;
+  amount: string;
+  asset: any;
+}
+
+export interface ApprovalsResponse {
+  cursor?: string | null;
+  pageSize: number;
+  items: Approval[];
+}
+
+// Virtual user types (Pro) — addressed as virtual:<id>
+export interface VirtualUser {
+  address: string;
+  type: string;
+  label: string;
+}
+
+export type VirtualUsersResponse = VirtualUser[];

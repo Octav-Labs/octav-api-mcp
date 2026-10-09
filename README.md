@@ -20,6 +20,9 @@ MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurr
 - 🎯 **Token Distribution**: Aggregated token holdings across chains
 - 🎁 **Airdrop Tracking**: Solana airdrop eligibility
 - 📈 **Polymarket Positions**: Prediction market tracking
+- 🧱 **Portfolio at Block**: Portfolio valued at a specific historical block
+- 🔐 **Token Approvals**: ERC-20 allowances granted to spender contracts
+- 📒 **Address Book & Bundles**: Manage saved addresses and named groups of them
 - 🤖 **x402 Payment Protocol**: AI agent-friendly endpoints
 
 ## Installation
@@ -111,13 +114,15 @@ pnpm dlx @modelcontextprotocol/inspector node build/index.js
 
 All tools use the `octav_` prefix for namespace clarity.
 
-### Portfolio & Holdings (4 tools)
+### Portfolio & Holdings (5 tools)
 
 #### 1. `octav_get_portfolio`
 Get complete portfolio including wallet holdings and DeFi protocol positions.
 
 **Parameters:**
 - `addresses` (required): Array of wallet addresses (max 10)
+- `waitForSync` (optional): Wait for a fresh sync when cached data is stale. Default: true
+- `includeExplorerUrls` (optional): Include blockchain explorer URLs. Default: false
 
 **Cost:** 1 credit per address
 
@@ -146,23 +151,40 @@ Get aggregated token distribution across all chains.
 
 **Cost:** 1 credit per address
 
+#### 5. `octav_get_portfolio_at_block`
+Get a single EVM address's portfolio valued at a specific block. Requires the Portfolio at Block add-on.
+
+**Parameters:**
+- `address` (required): EVM wallet address
+- `chain` (required): `ethereum`, `linea` or `monad`
+- `block` (required): Block number
+
+**Cost:** 1 credit (plus the add-on)
+
 ### Transactions (2 tools)
 
-#### 5. `octav_get_transactions`
+#### 6. `octav_get_transactions`
 Query transaction history with filtering and pagination.
 
 **Parameters:**
 - `addresses` (required): Array of wallet addresses (max 10)
-- `chain` (optional): Filter by specific chain
-- `type` (optional): Filter by transaction type
+- `chain` (optional): Chain keys to filter by, comma-separated (e.g. `ethereum,arbitrum`)
+- `type` (optional): Transaction types to filter by, comma-separated (e.g. `SWAP,DEPOSIT`)
+- `protocol` (optional): Protocol keys to filter by, comma-separated
+- `interactingAddresses` (optional): Array of counterparty addresses to filter by
+- `search` (optional): Full-text search over token symbols, names and addresses
+- `tokenId` (optional): NFT token ID
 - `startDate` (optional): Start date (YYYY-MM-DD)
 - `endDate` (optional): End date (YYYY-MM-DD)
+- `sort` (optional): `ASC` or `DESC` by timestamp. Default: `DESC`
+- `hideSpam` (optional): Exclude spam transactions
+- `hideDust` (optional): Exclude dust transactions
 - `offset` (optional): Pagination offset. Default: 0
 - `limit` (optional): Number of results (1-250). Default: 50
 
 **Cost:** 1 credit per address
 
-#### 6. `octav_sync_transactions`
+#### 7. `octav_sync_transactions`
 Manually trigger transaction synchronization.
 
 **Parameters:**
@@ -172,7 +194,7 @@ Manually trigger transaction synchronization.
 
 ### Historical & Snapshots (2 tools)
 
-#### 7. `octav_get_historical`
+#### 8. `octav_get_historical`
 Get portfolio snapshot for a specific date in the past.
 
 **Parameters:**
@@ -181,7 +203,7 @@ Get portfolio snapshot for a specific date in the past.
 
 **Cost:** 1 credit per address
 
-#### 8. `octav_subscribe_snapshot`
+#### 9. `octav_subscribe_snapshot`
 Subscribe to automatic portfolio snapshots.
 
 **Parameters:**
@@ -190,9 +212,9 @@ Subscribe to automatic portfolio snapshots.
 
 **Cost:** 1 credit per address
 
-### Metadata (2 tools)
+### Metadata (5 tools)
 
-#### 9. `octav_get_status`
+#### 10. `octav_get_status`
 Check synchronization status across all chains.
 
 **Parameters:**
@@ -200,16 +222,42 @@ Check synchronization status across all chains.
 
 **Cost:** FREE
 
-#### 10. `octav_get_credits`
+#### 11. `octav_get_credits`
 Check API credit balance and usage.
 
 **Parameters:** None
 
 **Cost:** FREE
 
-### Specialized (4 tools)
+#### 12. `octav_get_chains`
+List every supported chain with its key, name, chain id, and whether portfolio and transactions are supported. Chain keys are what the `chain` parameters of other tools take.
 
-#### 11. `octav_get_airdrop`
+**Parameters:** None
+
+**Cost:** FREE
+
+#### 13. `octav_get_chain_protocols`
+List the protocols tracked on a chain, with the keys used by the `protocol` filter of `octav_get_transactions`.
+
+**Parameters:**
+- `chain` (required): Chain key
+- `page` (optional): Page number. Default: 1
+- `limit` (optional): Protocols per page (1-100). Default: 20
+
+**Cost:** FREE
+
+#### 14. `octav_get_contract_protocol`
+Identify the DeFi protocol a contract address belongs to.
+
+**Parameters:**
+- `contract` (required): Contract address (EVM or Solana)
+- `chain` (optional): Chain key. Omit to search every chain.
+
+**Cost:** 5 credits, refunded if no protocol is found
+
+### Specialized (5 tools)
+
+#### 15. `octav_get_airdrop`
 Check airdrop eligibility (Solana only).
 
 **Parameters:**
@@ -217,7 +265,7 @@ Check airdrop eligibility (Solana only).
 
 **Cost:** 1 credit
 
-#### 12. `octav_get_polymarket`
+#### 16. `octav_get_polymarket`
 Get Polymarket prediction market positions.
 
 **Parameters:**
@@ -225,7 +273,7 @@ Get Polymarket prediction market positions.
 
 **Cost:** 1 credit
 
-#### 13. `octav_agent_wallet`
+#### 17. `octav_agent_wallet`
 Get wallet holdings via x402 payment protocol (for AI agents).
 
 **Parameters:**
@@ -233,13 +281,152 @@ Get wallet holdings via x402 payment protocol (for AI agents).
 
 **Cost:** Paid via HTTP 402 payment protocol
 
-#### 14. `octav_agent_portfolio`
+#### 18. `octav_agent_portfolio`
 Get full portfolio via x402 payment protocol (for AI agents).
 
 **Parameters:**
 - `addresses` (required): Array of wallet addresses (max 10)
 
 **Cost:** Paid via HTTP 402 payment protocol
+
+#### 19. `octav_get_approvals`
+Get the ERC-20 token approvals a wallet has granted on one chain. Paginated by cursor.
+
+**Parameters:**
+- `address` (required): EVM wallet address
+- `chain` (required): `arbitrum`, `avalanche`, `base`, `binance`, `ethereum`, `fantom`, `gnosis`, `linea`, `optimism` or `polygon`
+- `limit` (optional): Approvals per page (1-100). Default: 25
+- `cursor` (optional): Cursor from the previous page
+
+**Cost:** 1 credit
+
+### Virtual Users (2 tools)
+
+Virtual users are balance-tracking or CEX-linked accounts managed in [Octav Pro](https://pro.octav.fi), addressed as `virtual:<id>`. They require Pro.
+
+#### 20. `octav_list_virtual_users`
+List the account's virtual users with their `virtual:<id>` addresses.
+
+**Parameters:** None
+
+**Cost:** 1 credit
+
+#### 21. `octav_get_virtual_users_portfolio`
+Get portfolios for virtual users.
+
+**Parameters:**
+- `addresses` (required): Array of `virtual:<id>` addresses (max 10)
+- `aggregated` (optional): Return one combined portfolio. Default: false
+- `waitForSync` (optional): Wait for a fresh sync when cached data is stale. Default: true
+- `includeExplorerUrls` (optional): Include blockchain explorer URLs. Default: false
+
+**Cost:** 1 credit per address
+
+### Address Book (4 tools)
+
+The address book is the list of addresses saved to your account, the same list you see in [Octav Pro](https://pro.octav.fi). Entries are keyed by address.
+
+Tools that delete or overwrite account data refuse to run unless called with `confirm: true`, like `--yes` in the [Octav CLI](https://github.com/Octav-Labs/octav-cli). Without it they return an error describing what would change.
+
+#### 22. `octav_list_address_book`
+List every saved address with its label, plan, plan expiry, and paid status.
+
+**Parameters:** None
+
+**Cost:** 1 credit
+
+#### 23. `octav_add_address_book_entries`
+Save addresses to the address book. An address already in the book keeps its existing label.
+
+**Parameters:**
+- `entries` (required): Array of 1-100 `{ address, label? }` objects. Labels are up to 255 characters.
+
+**Cost:** 1 credit
+
+#### 24. `octav_rename_address_book_entry`
+Change the label on a saved address.
+
+**Parameters:**
+- `address` (required): Address of the entry
+- `label` (required): New label, up to 255 characters. An empty string clears it.
+- `confirm` (required): Must be `true`, since this replaces the current label
+
+**Cost:** 1 credit
+
+#### 25. `octav_remove_address_book_entry`
+Remove an address from the address book. Entries on a paid plan or authorized by the wallet owner must be removed in Octav Pro instead.
+
+**Parameters:**
+- `address` (required): Address of the entry
+- `confirm` (required): Must be `true`
+
+**Cost:** 1 credit
+
+### Bundles (7 tools)
+
+Bundles are named groups of address book addresses, the same bundles you see in Octav Pro. Every address in a bundle must already be in the address book. By default an account can have 5 bundles of up to 10 addresses each.
+
+#### 26. `octav_list_bundles`
+List every bundle with its id, name, and addresses.
+
+**Parameters:** None
+
+**Cost:** 1 credit
+
+#### 27. `octav_get_bundle`
+Get one bundle by id.
+
+**Parameters:**
+- `bundleId` (required): Bundle id
+
+**Cost:** 1 credit
+
+#### 28. `octav_create_bundle`
+Create a bundle. Names must be unique, and no two bundles may hold exactly the same addresses.
+
+**Parameters:**
+- `name` (required): Bundle name, 1-255 characters
+- `addresses` (required): Array of addresses already in the address book
+
+**Cost:** 1 credit
+
+#### 29. `octav_rename_bundle`
+Rename a bundle.
+
+**Parameters:**
+- `bundleId` (required): Bundle id
+- `name` (required): New name, 1-255 characters
+- `confirm` (required): Must be `true`, since this replaces the current name
+
+**Cost:** 1 credit
+
+#### 30. `octav_delete_bundle`
+Delete a bundle. Its addresses stay in the address book.
+
+**Parameters:**
+- `bundleId` (required): Bundle id
+- `confirm` (required): Must be `true`
+
+**Cost:** 1 credit
+
+#### 31. `octav_add_bundle_address`
+Add an address from the address book to a bundle.
+
+**Parameters:**
+- `bundleId` (required): Bundle id
+- `address` (required): Address to add
+
+**Cost:** 1 credit
+
+#### 32. `octav_remove_bundle_address`
+Remove an address from a bundle. It stays in the address book. To remove a bundle's last address, delete the bundle instead.
+
+**Parameters:**
+- `bundleId` (required): Bundle id
+- `address` (required): Address to remove
+- `confirm` (required): Must be `true`
+
+**Cost:** 1 credit
 
 ## Address Formats
 
@@ -248,17 +435,17 @@ The server accepts two address formats:
 - **EVM addresses**: `0x` followed by 40 hex characters (Ethereum, Polygon, Arbitrum, Base, etc.)
 - **Solana addresses**: 32-44 character base58 strings
 
+The address book and bundle tools also accept Starknet and Tron addresses.
+
 ## Response Format
 
-All tools return dual-format responses:
-
-1. **Markdown Summary**: Human-readable overview with key metrics
-2. **Full JSON**: Complete API response data for programmatic access
+All tools return the Octav API response as JSON.
 
 ## API Costs & Rate Limits
 
 - Most endpoints cost **1 credit per address**
-- `octav_get_status` and `octav_get_credits` are **FREE**
+- `octav_get_status`, `octav_get_credits`, `octav_get_chains` and `octav_get_chain_protocols` are **FREE**
+- `octav_get_contract_protocol` costs **5 credits**, refunded if no protocol is found
 - Transaction queries have a **max limit of 250** per request
 - Max **10 addresses** per request
 - Purchase credits at [octav.fi](https://octav.fi)
@@ -303,6 +490,9 @@ Once configured with Claude Desktop, you can ask questions like:
 - "Get my transaction history for the last month"
 - "Am I eligible for any Solana airdrops?"
 - "What are my Polymarket positions?"
+- "Which contracts can spend my tokens on Ethereum?"
+- "What was 0x... worth at Ethereum block 19000000?"
+- "Save 0x... to my address book as Treasury and add it to my Client A bundle"
 
 ## Supported Chains
 
