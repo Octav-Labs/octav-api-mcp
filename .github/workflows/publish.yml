@@ -36,7 +36,6 @@ jobs:
       - name: Build
         run: pnpm build
 
-      - name: Publish to npm
-        run: pnpm publish --access public --no-git-checks
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      # The version stays private until a maintainer approves it on npmjs.com with 2FA
+      - name: Stage release on npm
+        run: npm stage publish --access public --provenance
