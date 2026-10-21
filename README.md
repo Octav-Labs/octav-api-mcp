@@ -29,6 +29,8 @@ MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurr
 
 ### For End Users
 
+**Requirements:** Node.js 24.22.1 or newer (22.23.4 / 26.12.1 on those lines). Older releases still trust the compromised eMudhra CA certificates, so `api.octav.fi` could be impersonated on a hostile network. The server prints a warning at startup if your Node.js is too old.
+
 The easiest way to use this MCP server is with npx (no installation required):
 
 ```bash
