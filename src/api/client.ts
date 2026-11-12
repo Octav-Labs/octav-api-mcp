@@ -34,6 +34,18 @@ export interface PortfolioOptions {
   includeExplorerUrls?: boolean;
 }
 
+// The POST routes check an EVM address's checksum as sent, while the GET routes lowercase
+// it first, so lowercase EVM addresses to get the same result. Solana addresses are
+// case-sensitive and are sent unchanged.
+export function bodyAddress(address: string): string {
+  return address.startsWith('0x') ? address.toLowerCase() : address;
+}
+
+// The API reads addresses as one comma-separated value; a repeated param is rejected
+export function addressParams(addresses: string[]): URLSearchParams {
+  return new URLSearchParams({ addresses: addresses.join(',') });
+}
+
 function appendPortfolioOptions(params: URLSearchParams, options: PortfolioOptions) {
   if (options.waitForSync) params.append('waitForSync', 'true');
   if (options.includeExplorerUrls) params.append('includeExplorerUrls', 'true');
@@ -210,8 +222,7 @@ export class OctavAPIClient {
     addresses: string[],
     options: PortfolioOptions = {}
   ): Promise<PortfolioResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     appendPortfolioOptions(params, options);
     return this.request<PortfolioResponse>(`/portfolio?${params}`);
   }
@@ -230,21 +241,18 @@ export class OctavAPIClient {
   }
 
   async getWallet(addresses: string[]): Promise<PortfolioResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     return this.request<PortfolioResponse>(`/wallet?${params}`);
   }
 
   async getNAV(addresses: string[], currency = 'USD'): Promise<NAVResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     params.append('currency', currency);
     return this.request<NAVResponse>(`/nav?${params}`);
   }
 
   async getTokenOverview(addresses: string[], date: string): Promise<TokenOverviewResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     params.append('date', date);
     return this.request<TokenOverviewResponse>(`/token-overview?${params}`);
   }
@@ -261,15 +269,14 @@ export class OctavAPIClient {
       tokenId?: string;
       startDate?: string;
       endDate?: string;
-      sort?: 'ASC' | 'DESC';
+      sort?: 'NEWEST' | 'OLDEST';
       hideSpam?: boolean;
       hideDust?: boolean;
       offset: number;
       limit: number;
     }
   ): Promise<TransactionsResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     // The API calls these networks and txTypes, and rejects chain and type with a 400
     if (options.chain) params.append('networks', options.chain);
     if (options.type) params.append('txTypes', options.type);
@@ -291,15 +298,16 @@ export class OctavAPIClient {
 
   async syncTransactions(addresses: string[]): Promise<SyncResponse> {
     // API returns a JSON string like "Address already syncing"
-    const text = await this.requestText('/sync-transactions', 'POST', { addresses });
+    const text = await this.requestText('/sync-transactions', 'POST', {
+      addresses: addresses.map(bodyAddress),
+    });
     // Strip surrounding quotes if present
     return text.replace(/^"|"$/g, '');
   }
 
   // Historical endpoints
   async getHistorical(addresses: string[], date: string): Promise<HistoricalResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     params.append('date', date);
     return this.request<HistoricalResponse>(`/historical?${params}`);
   }
@@ -308,14 +316,13 @@ export class OctavAPIClient {
     addresses: { address: string; description?: string }[]
   ): Promise<SubscribeSnapshotResponse> {
     return this.request<SubscribeSnapshotResponse>('/subscribe-snapshot', 'POST', {
-      addresses,
+      addresses: addresses.map((entry) => ({ ...entry, address: bodyAddress(entry.address) })),
     });
   }
 
   // Metadata endpoints
   async getStatus(addresses: string[]): Promise<StatusResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     return this.request<StatusResponse>(`/status?${params}`);
   }
 
@@ -359,14 +366,12 @@ export class OctavAPIClient {
   }
 
   async getAgentWallet(addresses: string[]): Promise<PortfolioResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     return this.request<PortfolioResponse>(`/agent/wallet?${params}`);
   }
 
   async getAgentPortfolio(addresses: string[]): Promise<PortfolioResponse> {
-    const params = new URLSearchParams();
-    addresses.forEach((addr) => params.append('addresses', addr));
+    const params = addressParams(addresses);
     return this.request<PortfolioResponse>(`/agent/portfolio?${params}`);
   }
 
@@ -391,8 +396,7 @@ export class OctavAPIClient {
     aggregated: boolean,
     options: PortfolioOptions = {}
   ): Promise<PortfolioResponse> {
-    // Unlike other endpoints, virtual user addresses go in one comma-separated value
-    const params = new URLSearchParams({ addresses: addresses.join(',') });
+    const params = addressParams(addresses);
     if (aggregated) params.append('aggregated', 'true');
     appendPortfolioOptions(params, options);
     return this.request<PortfolioResponse>(`/virtual-users/portfolio?${params}`);

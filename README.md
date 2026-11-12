@@ -15,7 +15,7 @@ MCP (Model Context Protocol) server for the [Octav](https://octav.fi) cryptocurr
 - 🔗 **20+ Blockchain Support**: Ethereum, Solana, Arbitrum, Base, Polygon, and more
 - 💼 **Complete Portfolio Tracking**: Wallets + DeFi protocol positions
 - 📊 **Transaction History**: Advanced filtering and pagination
-- 💰 **Multi-Currency NAV**: USD, EUR, GBP, JPY, CNY, ETH, BTC
+- 💰 **Multi-Currency NAV**: USD, EUR, CAD, AED, CHF, SGD, ETH, SOL, cbBTC, EURC, BNB, WHYPE
 - 📸 **Historical Snapshots**: Track portfolio value over time
 - 🎯 **Token Distribution**: Aggregated token holdings across chains
 - 🎁 **Airdrop Tracking**: Solana airdrop eligibility
@@ -122,7 +122,7 @@ All tools use the `octav_` prefix for namespace clarity.
 Get complete portfolio including wallet holdings and DeFi protocol positions.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 - `waitForSync` (optional): Wait for a fresh sync when cached data is stale. Default: true
 - `includeExplorerUrls` (optional): Include blockchain explorer URLs. Default: false
 
@@ -132,7 +132,7 @@ Get complete portfolio including wallet holdings and DeFi protocol positions.
 Get wallet holdings only (excludes DeFi protocols).
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 
 **Cost:** 1 credit per address
 
@@ -140,8 +140,8 @@ Get wallet holdings only (excludes DeFi protocols).
 Get total net worth (NAV) in specified currency.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
-- `currency` (optional): Currency code (usd, eur, gbp, jpy, cny, eth, btc). Default: usd
+- `addresses` (required): Array of wallet addresses (max 50)
+- `currency` (optional): `USD`, `EUR`, `CAD`, `AED`, `CHF`, `SGD`, `ETH`, `SOL`, `cbBTC`, `EURC`, `BNB` or `WHYPE` (case-sensitive). Default: `USD`
 
 **Cost:** 1 credit per address
 
@@ -149,7 +149,7 @@ Get total net worth (NAV) in specified currency.
 Get aggregated token distribution across all chains.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 
 **Cost:** 1 credit per address
 
@@ -169,7 +169,7 @@ Get a single EVM address's portfolio valued at a specific block. Requires the Po
 Query transaction history with filtering and pagination.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 - `chain` (optional): Chain keys to filter by, comma-separated (e.g. `ethereum,arbitrum`)
 - `type` (optional): Transaction types to filter by, comma-separated (e.g. `SWAP,DEPOSIT`)
 - `protocol` (optional): Protocol keys to filter by, comma-separated
@@ -178,7 +178,7 @@ Query transaction history with filtering and pagination.
 - `tokenId` (optional): NFT token ID
 - `startDate` (optional): Start date (YYYY-MM-DD)
 - `endDate` (optional): End date (YYYY-MM-DD)
-- `sort` (optional): `ASC` or `DESC` by timestamp. Default: `DESC`
+- `sort` (optional): `NEWEST` or `OLDEST` by timestamp. Default: `NEWEST`
 - `hideSpam` (optional): Exclude spam transactions
 - `hideDust` (optional): Exclude dust transactions
 - `offset` (optional): Pagination offset. Default: 0
@@ -190,7 +190,7 @@ Query transaction history with filtering and pagination.
 Manually trigger transaction synchronization.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array of wallet addresses
 
 **Cost:** 1 credit per address
 
@@ -200,7 +200,7 @@ Manually trigger transaction synchronization.
 Get portfolio snapshot for a specific date in the past.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 - `date` (required): Date for snapshot (YYYY-MM-DD)
 
 **Cost:** 1 credit per address
@@ -209,7 +209,7 @@ Get portfolio snapshot for a specific date in the past.
 Subscribe to automatic portfolio snapshots.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array of wallet addresses
 - `frequency` (required): Snapshot frequency (daily, weekly, monthly)
 
 **Cost:** 1 credit per address
@@ -220,7 +220,7 @@ Subscribe to automatic portfolio snapshots.
 Check synchronization status across all chains.
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 
 **Cost:** FREE
 
@@ -279,7 +279,7 @@ Get Polymarket prediction market positions.
 Get wallet holdings via x402 payment protocol (for AI agents).
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 
 **Cost:** Paid via HTTP 402 payment protocol
 
@@ -287,7 +287,7 @@ Get wallet holdings via x402 payment protocol (for AI agents).
 Get full portfolio via x402 payment protocol (for AI agents).
 
 **Parameters:**
-- `addresses` (required): Array of wallet addresses (max 10)
+- `addresses` (required): Array with one wallet address (the API takes one address per call)
 
 **Cost:** Paid via HTTP 402 payment protocol
 
@@ -317,7 +317,7 @@ List the account's virtual users with their `virtual:<id>` addresses.
 Get portfolios for virtual users.
 
 **Parameters:**
-- `addresses` (required): Array of `virtual:<id>` addresses (max 10)
+- `addresses` (required): Array of `virtual:<id>` addresses (max 50)
 - `aggregated` (optional): Return one combined portfolio. Default: false
 - `waitForSync` (optional): Wait for a fresh sync when cached data is stale. Default: true
 - `includeExplorerUrls` (optional): Include blockchain explorer URLs. Default: false

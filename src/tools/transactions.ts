@@ -15,9 +15,9 @@ export const getTransactions = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array with one wallet address (EVM: 0x... or Solana base58). The API accepts one address per call.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 1,
         },
         chain: {
           type: 'string',
@@ -56,8 +56,8 @@ export const getTransactions = {
         },
         sort: {
           type: 'string',
-          enum: ['ASC', 'DESC'],
-          description: 'Sort by timestamp (default: DESC, newest first)',
+          enum: ['NEWEST', 'OLDEST'],
+          description: 'Sort by timestamp (default: NEWEST)',
         },
         hideSpam: {
           type: 'boolean',
@@ -126,9 +126,8 @@ export const syncTransactions = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array of wallet addresses (EVM: 0x... or Solana base58).',
           minItems: 1,
-          maxItems: 10,
         },
       },
       required: ['addresses'],

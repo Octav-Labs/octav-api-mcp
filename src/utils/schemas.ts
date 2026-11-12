@@ -11,10 +11,30 @@ export const addressSchema = z
     'Invalid address format. Must be EVM (0x...) or Solana (base58) address.'
   );
 
-export const addressesSchema = z
-  .array(addressSchema)
-  .min(1, 'At least one address is required')
-  .max(10, 'Maximum 10 addresses allowed');
+function rejectDuplicates(addresses: string[], ctx: z.RefinementCtx) {
+  const duplicate = addresses.find((address, i) => addresses.indexOf(address) !== i);
+  if (duplicate !== undefined) {
+    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate address: '${duplicate}'` });
+  }
+}
+
+// Address limits follow the API: most wallet data endpoints take one address,
+// /nav and /virtual-users/portfolio take up to 50, and the POST endpoints
+// (sync-transactions, subscribe-snapshot) have no limit.
+export const MAX_MULTI_ADDRESSES = 50;
+
+const addressListSchema = z.array(addressSchema).min(1, 'At least one address is required');
+
+export const singleAddressSchema = addressListSchema.max(
+  1,
+  'This endpoint accepts one address per call. Call the tool once per address.'
+);
+
+export const multiAddressesSchema = addressListSchema
+  .max(MAX_MULTI_ADDRESSES, `Maximum ${MAX_MULTI_ADDRESSES} addresses allowed`)
+  .superRefine(rejectDuplicates);
+
+export const unboundedAddressesSchema = addressListSchema.superRefine(rejectDuplicates);
 
 export const evmAddressSchema = z
   .string()
@@ -43,9 +63,25 @@ const virtualAddressSchema = z.string().refine(
   })
 );
 
+// NAV currencies the API accepts (fiat, then crypto conversion rates), matched case-sensitively
+export const NAV_CURRENCIES = [
+  'USD',
+  'EUR',
+  'CAD',
+  'AED',
+  'CHF',
+  'SGD',
+  'ETH',
+  'SOL',
+  'cbBTC',
+  'EURC',
+  'BNB',
+  'WHYPE',
+] as const;
+
 // Portfolio tool schemas — like the CLI, wait for a fresh sync unless told otherwise
 export const portfolioArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
   waitForSync: z.boolean().default(true),
   includeExplorerUrls: z.boolean().default(false),
 });
@@ -57,22 +93,22 @@ export const portfolioAtBlockArgsSchema = z.object({
 });
 
 export const walletArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
 });
 
 export const navArgsSchema = z.object({
-  addresses: addressesSchema,
-  currency: z.enum(['USD', 'EUR', 'GBP', 'JPY', 'CNY']).default('USD'),
+  addresses: multiAddressesSchema,
+  currency: z.enum(NAV_CURRENCIES).default('USD'),
 });
 
 export const tokenOverviewArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
 });
 
 // Transaction tool schemas
 export const transactionsArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
   chain: z.string().optional(),
   type: z.string().optional(),
   protocol: z.string().optional(),
@@ -82,7 +118,12 @@ export const transactionsArgsSchema = z.object({
   startDate: dateSchema.optional(),
   endDate: dateSchema.optional(),
   sort: z
-    .preprocess((v) => (typeof v === 'string' ? v.toUpperCase() : v), z.enum(['ASC', 'DESC']))
+    // The API reads NEWEST or OLDEST and ignores anything else; ASC and DESC are kept as aliases
+    .preprocess((v) => {
+      if (typeof v !== 'string') return v;
+      const upper = v.toUpperCase();
+      return upper === 'ASC' ? 'OLDEST' : upper === 'DESC' ? 'NEWEST' : upper;
+    }, z.enum(['NEWEST', 'OLDEST']))
     .optional(),
   hideSpam: z.boolean().optional(),
   hideDust: z.boolean().optional(),
@@ -91,23 +132,23 @@ export const transactionsArgsSchema = z.object({
 });
 
 export const syncTransactionsArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: unboundedAddressesSchema,
 });
 
 // Historical tool schemas
 export const historicalArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
   date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format'),
 });
 
 export const subscribeSnapshotArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: unboundedAddressesSchema,
   description: z.string().optional(),
 });
 
 // Metadata tool schemas
 export const statusArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
 });
 
 export const creditsArgsSchema = z.object({});
@@ -135,11 +176,11 @@ export const polymarketArgsSchema = z.object({
 });
 
 export const agentWalletArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
 });
 
 export const agentPortfolioArgsSchema = z.object({
-  addresses: addressesSchema,
+  addresses: singleAddressSchema,
 });
 
 export const approvalsArgsSchema = z.object({
@@ -156,7 +197,8 @@ export const virtualUsersPortfolioArgsSchema = z.object({
   addresses: z
     .array(virtualAddressSchema)
     .min(1, 'At least one address is required')
-    .max(10, 'Maximum 10 addresses allowed'),
+    .max(MAX_MULTI_ADDRESSES, `Maximum ${MAX_MULTI_ADDRESSES} addresses allowed`)
+    .superRefine(rejectDuplicates),
   aggregated: z.boolean().default(false),
   waitForSync: z.boolean().default(true),
   includeExplorerUrls: z.boolean().default(false),
@@ -174,13 +216,6 @@ const bundleNameSchema = z
   .min(1, 'Bundle name is required')
   .max(255, 'Bundle name must be at most 255 characters');
 const confirmSchema = z.boolean().optional();
-
-function rejectDuplicates(addresses: string[], ctx: z.RefinementCtx) {
-  const duplicate = addresses.find((address, i) => addresses.indexOf(address) !== i);
-  if (duplicate !== undefined) {
-    ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate address: '${duplicate}'` });
-  }
-}
 
 export const listAddressBookArgsSchema = z.object({});
 
