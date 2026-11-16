@@ -50,8 +50,6 @@ export class ToolRegistry {
     // Register specialized tools
     this.register(specialized.getAirdrop);
     this.register(specialized.getPolymarket);
-    this.register(specialized.getAgentWallet);
-    this.register(specialized.getAgentPortfolio);
     this.register(specialized.getApprovals);
 
     // Register virtual user tools

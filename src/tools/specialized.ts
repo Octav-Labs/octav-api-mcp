@@ -2,8 +2,6 @@ import type { OctavAPIClient } from '../api/client.js';
 import {
   airdropArgsSchema,
   polymarketArgsSchema,
-  agentWalletArgsSchema,
-  agentPortfolioArgsSchema,
   approvalsArgsSchema,
 } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
@@ -47,13 +45,13 @@ export const getPolymarket = {
     name: 'octav_get_polymarket',
     title: 'Get Polymarket Positions',
     description:
-      'Get Polymarket prediction market positions for address. Shows active positions, values, and P&L. Costs 1 credit.',
+      'Get the Polymarket prediction market positions and collateral of a Polymarket (proxy) wallet. Pass the proxy wallet itself, as shown on the Polymarket profile; a regular wallet\'s proxy is not looked up. Costs 1 credit.',
     inputSchema: {
       type: 'object',
       properties: {
         address: {
           type: 'string',
-          description: 'Ethereum wallet address (0x...)',
+          description: 'Polymarket (proxy) wallet address (0x...), as shown on the Polymarket profile',
         },
       },
       required: ['address'],
@@ -67,80 +65,6 @@ export const getPolymarket = {
   async execute(args: any, apiClient: OctavAPIClient) {
     const validated = validateInput(polymarketArgsSchema, args);
     const data = await apiClient.getPolymarket(validated.address);
-    const stripped = stripPortfolioFields(data);
-
-    return {
-      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
-    };
-  },
-};
-
-export const getAgentWallet = {
-  definition: {
-    name: 'octav_agent_wallet',
-    title: 'Get Wallet (x402 Payment)',
-    description:
-      'Get wallet holdings using x402 payment protocol. For AI agents with automatic payment. Returns wallet balances and values. Costs paid via HTTP 402 payment protocol.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        addresses: {
-          type: 'array',
-          items: { type: 'string' },
-          description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
-          minItems: 1,
-          maxItems: 10,
-        },
-      },
-      required: ['addresses'],
-    },
-    annotations: {
-      readOnlyHint: true,
-      destructiveHint: false,
-      openWorldHint: true,
-    },
-  },
-  async execute(args: any, apiClient: OctavAPIClient) {
-    const validated = validateInput(agentWalletArgsSchema, args);
-    const data = await apiClient.getAgentWallet(validated.addresses);
-    const stripped = stripPortfolioFields(data);
-
-    return {
-      content: [{ type: 'text', text: JSON.stringify(stripped, null, 2) }],
-    };
-  },
-};
-
-export const getAgentPortfolio = {
-  definition: {
-    name: 'octav_agent_portfolio',
-    title: 'Get Portfolio (x402 Payment)',
-    description:
-      'Get full portfolio using x402 payment protocol. For AI agents with automatic payment. Returns wallet + DeFi positions. Costs paid via HTTP 402 payment protocol.',
-    inputSchema: {
-      type: 'object',
-      properties: {
-        addresses: {
-          type: 'array',
-          items: { type: 'string' },
-          description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
-          minItems: 1,
-          maxItems: 10,
-        },
-      },
-      required: ['addresses'],
-    },
-    annotations: {
-      readOnlyHint: true,
-      destructiveHint: false,
-      openWorldHint: true,
-    },
-  },
-  async execute(args: any, apiClient: OctavAPIClient) {
-    const validated = validateInput(agentPortfolioArgsSchema, args);
-    const data = await apiClient.getAgentPortfolio(validated.addresses);
     const stripped = stripPortfolioFields(data);
 
     return {
@@ -165,7 +89,7 @@ export const getApprovals = {
         chain: {
           type: 'string',
           description:
-            'Chain key: arbitrum, avalanche, base, binance, ethereum, fantom, gnosis, linea, optimism or polygon',
+            'Chain key: arbitrum, avalanche, base, binance, ethereum, gnosis, linea, optimism or polygon',
         },
         limit: {
           type: 'number',
