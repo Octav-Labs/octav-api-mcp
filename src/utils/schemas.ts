@@ -146,7 +146,7 @@ export const transactionsArgsSchema = z.object({
   limit: z.number().int().min(1).max(250).default(50),
 });
 
-// The API charges for every address in the body but only syncs the first
+// The API syncs one address per call
 export const syncTransactionsArgsSchema = z.object({
   addresses: singleAddressSchema,
 });
