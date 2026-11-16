@@ -17,10 +17,11 @@ export const addressSchema = z
 const findDuplicate = (addresses: string[], key: (address: string) => string) =>
   addresses.find((address, i) => addresses.findIndex((other) => key(other) === key(address)) !== i);
 
-// Data endpoints and virtual users: the API compares every address case-insensitively
+// Data endpoints and virtual users: the API compares every address case-insensitively.
+// Normalized first, so 0xAbc… and a prefixless abc… count as the same address.
 function rejectDuplicates(addresses: string[], ctx: z.RefinementCtx) {
-  if (!hasDuplicates(addresses)) return;
-  const duplicate = findDuplicate(addresses, (address) => address.toLowerCase());
+  if (!hasDuplicates(addresses.map(normalizeAddress))) return;
+  const duplicate = findDuplicate(addresses, (address) => normalizeAddress(address).toLowerCase());
   ctx.addIssue({ code: z.ZodIssueCode.custom, message: `Duplicate address: '${duplicate}'` });
 }
 
