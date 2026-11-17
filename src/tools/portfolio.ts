@@ -5,6 +5,7 @@ import {
   walletArgsSchema,
   navArgsSchema,
   tokenOverviewArgsSchema,
+  NAV_CURRENCIES,
 } from '../utils/schemas.js';
 import { validateInput } from '../utils/validation.js';
 import { stripPortfolioFields } from '../utils/strip-portfolio.js';
@@ -22,9 +23,9 @@ export const getPortfolio = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array with one wallet address (EVM: 0x... or Solana base58). The API accepts one address per call.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 1,
         },
         waitForSync: {
           type: 'boolean',
@@ -119,9 +120,9 @@ export const getWallet = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array with one wallet address (EVM: 0x... or Solana base58). The API accepts one address per call.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 1,
         },
       },
       required: ['addresses'],
@@ -148,7 +149,7 @@ export const getNAV = {
     name: 'octav_get_nav',
     title: 'Get Net Asset Value',
     description:
-      'Get total net worth (NAV) in specified currency. Supports USD, EUR, GBP, JPY, CNY, ETH, BTC. Costs 1 credit per address.',
+      'Get total net worth (NAV) in specified currency. Supports USD, EUR, CAD, AED, CHF, SGD, ETH, SOL, cbBTC, EURC, BNB, WHYPE. Costs 1 credit per address.',
     inputSchema: {
       type: 'object',
       properties: {
@@ -156,13 +157,13 @@ export const getNAV = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 50 addresses.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 50,
         },
         currency: {
           type: 'string',
-          enum: ['USD', 'EUR', 'GBP', 'JPY', 'CNY'],
+          enum: [...NAV_CURRENCIES],
           description: 'Currency for NAV calculation. Defaults to USD.',
           default: 'USD',
         },
@@ -198,9 +199,9 @@ export const getTokenOverview = {
           type: 'array',
           items: { type: 'string' },
           description:
-            'Array of wallet addresses (EVM: 0x... or Solana base58). Max 10 addresses.',
+            'Array with one wallet address (EVM: 0x... or Solana base58). The API accepts one address per call.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 1,
         },
         date: {
           type: 'string',

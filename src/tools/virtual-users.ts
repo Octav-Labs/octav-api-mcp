@@ -44,9 +44,9 @@ export const getVirtualUsersPortfolio = {
         addresses: {
           type: 'array',
           items: { type: 'string' },
-          description: 'Virtual user addresses (virtual:<id>). Max 10 addresses.',
+          description: 'Virtual user addresses (virtual:<id>). Max 50 addresses.',
           minItems: 1,
-          maxItems: 10,
+          maxItems: 50,
         },
         aggregated: {
           type: 'boolean',
